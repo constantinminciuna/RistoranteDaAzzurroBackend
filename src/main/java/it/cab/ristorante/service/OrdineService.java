@@ -1,7 +1,13 @@
  package it.cab.ristorante.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import it.cab.ristorante.data.model.Ordine;
@@ -108,13 +114,46 @@ public class OrdineService {
         } else throw new ConsegnaNonRiuscitaException();
     }
 	
-//	//@Scheduled(cron = "0 0 19,20,21,22,23 ? * *")
-//	@Scheduled(cron = "0 * 0 ? * *")
-//    public void consegnaOrdiniInCoda() {
-//		while (!ordiniAccettatiInCoda.isEmpty()) {
-//            Ordine ordineDaConsegnare = ordiniAccettatiInCoda.poll();
-//            consegnaOrdine(ordineDaConsegnare);
-//        }
-//    }
-
+	public Map<String, Object> getOrdiniListByIdUtente(Integer id, int page, int size){
+		try {
+			List<Ordine> ordini = new ArrayList<Ordine>();
+			Pageable paging = PageRequest.of(page, size);
+	
+			Page<Ordine> pageOrdini = ordineRepository.findByIdUtente(id, paging);
+			
+			ordini = pageOrdini.getContent();
+	
+			Map<String, Object> response = new HashMap<>();
+			response.put("ordini", ordini);
+			response.put("currentPage", pageOrdini.getNumber());
+			response.put("totalItems", pageOrdini.getTotalElements());
+			response.put("totalPages", pageOrdini.getTotalPages());
+			
+			return response;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public Map<String, Object> getOrdiniList(int page, int size){
+		try {
+			List<Ordine> ordini = new ArrayList<Ordine>();
+			Pageable paging = PageRequest.of(page, size);
+	
+			Page<Ordine> pageOrdini = ordineRepository.findAll(paging);
+			
+			ordini = pageOrdini.getContent();
+	
+			Map<String, Object> response = new HashMap<>();
+			response.put("ordini", ordini);
+			response.put("currentPage", pageOrdini.getNumber());
+			response.put("totalItems", pageOrdini.getTotalElements());
+			response.put("totalPages", pageOrdini.getTotalPages());
+			
+			return response;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 }
