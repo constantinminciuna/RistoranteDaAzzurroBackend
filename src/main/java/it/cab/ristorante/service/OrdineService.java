@@ -2,6 +2,7 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class OrdineService {
 	
 	public List<Ordine> getOrdineByUtente(Integer id) {
 		return ordineRepository.findByIdUtente(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ordine non trovato con ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Ordini non trovato con ID utente: " + id));
 	}
 	
 	public Ordine creaOrdine(Ordine ordine) {
@@ -84,12 +85,21 @@ public class OrdineService {
         Ordine ordine = getOrdine(idOrdine);
 
         if (!ordine.isAccettato()) {
-            ordine.setAccettato(true);
+        	
+        	while(ordine.isAccettato() == false) {
+        		List<Ordine> ordineOrarioCheck = ordineRepository.findByData(ordine.getData());
+        		
+        		if(ordineOrarioCheck.isEmpty()) {
+            		ordine.setAccettato(true);
+                    ordine = ordineRepository.save(ordine);
+            	} else {
+            		ordine.setData(ordine.getData().plusHours(1));
+            	}
+        	}
+        	
+        	consegnaOrdine(ordine);
             
-            ordine = ordineRepository.save(ordine);
-            
-            //ordiniAccettatiInCoda.add(ordine);
-            
+        	/*
             try {
 				Thread.sleep(20000);
 				
@@ -100,6 +110,7 @@ public class OrdineService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			*/
             
             return ordine;
         } else {
